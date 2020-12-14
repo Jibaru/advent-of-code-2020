@@ -146,12 +146,52 @@ const busesObj = busesObjWithX
     return { id: parseInt(e.id), t: e.t };
   });
 
-const partTwo = () => {
-  let ocurrences = []; // {bus, timeStamp}
-  let currentTimeStamp = 1;
+const modularMultiplicativeInverse = (a, modulus) => {
+  // Calculate current value of a mod modulus
+  const b = BigInt(a % BigInt(modulus));
 
-  while (ocurrences.length != busesObj.length) {}
+  // We brute force the search for the smaller hipothesis, as we
+  // know that the number must exist between the current given modulus and 1
+  for (let hipothesis = 1n; hipothesis <= BigInt(modulus); hipothesis++) {
+    if ((b * BigInt(hipothesis)) % BigInt(modulus) == 1n) return hipothesis;
+  }
+  // If we do not find it, we return 1
+  return 1n;
 };
 
-// Ok, i'm stuck u.u
-// check chinese remainder theorem
+const solveCRT = (remainders, modules) => {
+  // Multiply all the modulus
+  const prod = modules.reduce((acc, val) => acc * BigInt(val), 1n);
+
+  return (
+    modules.reduce((sum, mod, index) => {
+      // Find the modular multiplicative inverse and calculate the sum
+      // SUM( remainder * productOfAllModulus/modulus * MMI ) (mod productOfAllModulus)
+      const p = prod / BigInt(mod);
+      return (
+        BigInt(sum) +
+        BigInt(remainders[index]) * modularMultiplicativeInverse(p, mod) * p
+      );
+    }, 0n) % prod
+  );
+};
+
+const partTwo = () => {
+  let remainders = [];
+  let modulos = [];
+
+  for (let i = 0; i < allBusesWithX.length; i++) {
+    if (allBusesWithX[i] !== "x") {
+      modulos.push(BigInt(parseInt(allBusesWithX[i])));
+      remainders.push(BigInt(BigInt(i) % modulos[modulos.length - 1]));
+    }
+  }
+
+  console.log(remainders);
+  console.log(modulos);
+
+  console.log(solveCRT(remainders, modulos));
+};
+
+// doesn't works
+partTwo();
